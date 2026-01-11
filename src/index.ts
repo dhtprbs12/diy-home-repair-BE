@@ -1,15 +1,23 @@
+console.log('🚀 Starting server...');
+
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+
+// Load environment variables FIRST
+dotenv.config();
+console.log('✅ Environment loaded');
+
 import analyzeRouter from './routes/analyze';
+console.log('✅ Analyze router loaded');
 import chatRouter from './routes/chat';
+console.log('✅ Chat router loaded');
 import usersRouter from './routes/users';
+console.log('✅ Users router loaded');
 import { requestLogger } from './middleware/logger';
 import { generalRateLimiter } from './middleware/rateLimiter';
 import { testConnection, isDatabaseEnabled } from './database/db';
-
-// Load environment variables
-dotenv.config();
+console.log('✅ All imports loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
