@@ -21,6 +21,7 @@ console.log('✅ All imports loaded');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+console.log(`📌 PORT from env: ${process.env.PORT}, using: ${PORT}`);
 
 // Middleware
 app.use(cors());
@@ -35,6 +36,11 @@ app.set('trust proxy', 1);
 app.use('/analyze', analyzeRouter);
 app.use('/chat', chatRouter);
 app.use('/users', usersRouter);
+
+// Root endpoint
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'DIY Home Repair API' });
+});
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
