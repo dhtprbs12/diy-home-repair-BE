@@ -3,11 +3,22 @@ import { v4 as uuidv4 } from 'uuid';
 
 // Database connection pool
 let pool: mysql.Pool | null = null;
+let dbEnabled = true;
+
+export function isDatabaseEnabled(): boolean {
+  return dbEnabled && !!process.env.DB_HOST;
+}
 
 export function getPool(): mysql.Pool {
+  if (!process.env.DB_HOST) {
+    console.warn('⚠️ Database not configured (DB_HOST missing). Database features disabled.');
+    dbEnabled = false;
+    throw new Error('Database not configured');
+  }
+  
   if (!pool) {
     pool = mysql.createPool({
-      host: process.env.DB_HOST || 'localhost',
+      host: process.env.DB_HOST,
       port: parseInt(process.env.DB_PORT || '3306'),
       user: process.env.DB_USER || 'root',
       password: process.env.DB_PASSWORD || '',
@@ -16,6 +27,7 @@ export function getPool(): mysql.Pool {
       connectionLimit: 10,
       queueLimit: 0,
     });
+    console.log('✅ Database pool created');
   }
   return pool;
 }

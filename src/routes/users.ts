@@ -1,7 +1,21 @@
-import { Router, Request, Response } from 'express';
-import { findOrCreateUser, updateUserEmail, saveHomeProfile, saveAnalysis, getUserAnalyses } from '../database/db';
+import { Router, Request, Response, NextFunction } from 'express';
+import { findOrCreateUser, updateUserEmail, saveHomeProfile, saveAnalysis, getUserAnalyses, isDatabaseEnabled } from '../database/db';
 
 const router = Router();
+
+// Middleware to check if database is available
+const requireDatabase = (req: Request, res: Response, next: NextFunction) => {
+  if (!isDatabaseEnabled()) {
+    return res.status(503).json({
+      success: false,
+      error: 'Database not configured. User features are disabled.'
+    });
+  }
+  next();
+};
+
+// Apply to all routes
+router.use(requireDatabase);
 
 // Register or login user (by email and/or device_id)
 router.post('/register', async (req: Request, res: Response) => {

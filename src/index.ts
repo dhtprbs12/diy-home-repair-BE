@@ -6,7 +6,7 @@ import chatRouter from './routes/chat';
 import usersRouter from './routes/users';
 import { requestLogger } from './middleware/logger';
 import { generalRateLimiter } from './middleware/rateLimiter';
-import { testConnection } from './database/db';
+import { testConnection, isDatabaseEnabled } from './database/db';
 
 // Load environment variables
 dotenv.config();
@@ -30,14 +30,18 @@ app.use('/users', usersRouter);
 
 // Health check endpoint
 app.get('/health', async (req, res) => {
-  const dbConnected = await testConnection();
+  let dbStatus = 'disabled';
+  if (isDatabaseEnabled()) {
+    const dbConnected = await testConnection();
+    dbStatus = dbConnected ? 'connected' : 'disconnected';
+  }
   
   res.json({
     success: true,
     data: {
       status: 'healthy',
       version: '1.0.0',
-      database: dbConnected ? 'connected' : 'disconnected',
+      database: dbStatus,
       timestamp: new Date().toISOString(),
     },
     timestamp: new Date().toISOString(),
@@ -63,11 +67,12 @@ app.use((err: Error, req: express.Request, res: express.Response, next: express.
   });
 });
 
-// Start server
-app.listen(PORT, () => {
-  console.log(`🔧 DIY Home Repair API Server running on port ${PORT}`);
-  console.log(`📍 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔍 Analyze endpoint: POST http://localhost:${PORT}/analyze`);
-  console.log(`💬 Chat endpoint: POST http://localhost:${PORT}/chat`);
+// Start server - bind to 0.0.0.0 for Railway/cloud deployment
+const HOST = '0.0.0.0';
+app.listen(Number(PORT), HOST, () => {
+  console.log(`🔧 DIY Home Repair API Server running on ${HOST}:${PORT}`);
+  console.log(`📍 Health check: /health`);
+  console.log(`🔍 Analyze endpoint: POST /analyze`);
+  console.log(`💬 Chat endpoint: POST /chat`);
 });
 
